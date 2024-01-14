@@ -1,0 +1,205 @@
+// ==UserScript==
+// @name         New Userscript
+// @namespace    http://tampermonkey.net/
+// @version      2024-01-04
+// @description  try to take over the world!
+// @author       You
+// @match        http*://*.jxjypt.cn/*
+// @icon         data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==
+// @grant        none
+// @require      https://cdn.bootcdn.net/ajax/libs/jquery/3.7.1/jquery.js
+// ==/UserScript==
+
+
+console.log('您已进入高等继续教育网')
+init()
+
+//初始化元素
+function init() {
+  //创建按钮元素
+  craeateButtonElement();
+  //创建消息提示元素
+  craeateMsgElement();
+  //课程学习监听自动展开
+  setCatalogueClickMonitor();
+}
+
+//创建按钮元素
+function craeateButtonElement() {
+  let btnParam = {
+    ele: document.createElement('div'),
+    css: "display: flex;" +
+      "cursor: pointer;" +
+      "position: fixed;" +
+      "right:40px;" +
+      "top: 100px;" +
+      "background: #aaa;" +
+      "width: 50px;" +
+      "height: 50px;" +
+      "z-index:1000;" +
+      "border-radius: 100%;",
+    iconcss: "margin: auto;" +
+      "width: 35px;" +
+      "height: 35px;" +
+      "line-height: 35px;" +
+      "background: #fff;" +
+      "animation:kite 5s infinite;" +
+      "text-align: center;" +
+      "font-size: 22px;" +
+      "border-radius: 100%;"
+  };
+
+  document.querySelector('body').appendChild(((ele) => {
+    ele.id = 'sloth-topic';
+    // 添加允许拖拽属性
+    ele.setAttribute('draggable',true)
+    ele.innerHTML = '<div style="' + btnParam.iconcss + '">🎶🦥</div>';
+    ele.style.cssText = btnParam.css;
+    return ele;
+  })(btnParam.ele));
+
+  //动态创建keyframes动画
+  //document.styleSheets[0].insertRule(`@keyframes kite{100%{transform:rotate(360deg);}}`,0)
+  const style = document.createElement('style')
+  style.appendChild(document.createTextNode(`@keyframes kite{100%{transform:rotate(360deg);}}`));
+  document.getElementById('sloth-topic').appendChild(style);
+  // 拖拽事件
+  document.getElementById('sloth-topic').addEventListener('dragend', function(e) {
+    e.stopPropagation()
+    const btn = document.getElementById('sloth-topic');
+    if (e.target.style['right'] > 0) e.target.style['right'] = 0
+    btn.style.cssText += btnParam.css + `left:${e.clientX}px;top:${e.clientY}px;`;
+  });
+  //按钮点击操作
+  document.getElementById("sloth-topic").addEventListener("click", function () {
+    start();
+  });
+}
+
+//创建消息元素
+function craeateMsgElement() {
+  let msgParam = {
+    ele: document.createElement('div'),
+    css: "background: rgba(0,0,0,0.6);" +
+      "position: fixed;" +
+      "inset: 0px;" +
+      "margin: auto;" +
+      "padding: 10px;" +
+      "border-radius: 5px;" +
+      "color: #fff;" +
+      "font-size: 18px;" +
+      "letter-spacing: 1.5px;" +
+      "display: none;" +
+      "z-index: 99999;"
+  };
+  document.querySelector('body').appendChild(((ele) => {
+    ele.id = 'sloth-msg';
+    ele.innerHTML = '';
+    ele.style.cssText = msgParam.css;
+    return ele;
+  })(msgParam.ele));
+}
+
+//消息提示
+function msg(msg, timeout = 2500) {
+  document.getElementById('sloth-msg').style.display = 'inline-table';
+  document.getElementById('sloth-msg').innerHTML = msg;
+  setTimeout(() => {
+    document.getElementById('sloth-msg').style.display = 'none';
+  }, timeout);
+}
+
+
+//点击开始按钮
+function start() {
+    //自动展开答案
+    var zkjxs = document.getElementsByClassName('zkjx')
+    for (let i = 0; i < zkjxs.length; i++)
+    {
+        zkjxs[i].click()
+
+    }
+    if(zkjxs.length>1){
+        msg('答案解析已展开完毕',6000)
+    }
+}
+
+//课程学习监听自动展开
+function setCatalogueClickMonitor() {
+    var courses = document.getElementsByClassName('z-gery-icon');
+    if(courses.length==0){
+        return;
+    }
+    let tablecon = document.getElementsByClassName("course")[0];
+    tablecon.onclick = function (event) {
+        var ele = event.target;
+        if(event.target.className=='z-gery-icon z-color z-class-icon'){
+           setTimeout(() => {
+               msg('------------- 以为您自动展开答案解析 -------------')
+               $(ele).parent().parent().parent().parent().find('.zkjx').click()
+           }, 1000);
+        }
+    }
+}
+
+
+
+(function() {
+    'use strict';
+    $(()=>{
+        console.log("start")
+        start()
+        setTimeout(() => {
+            let i = 1
+            //console.log($('.solution').text())
+            //console.log($('.sub-answer sub-picon-no clearfix ').text())
+            $('.sub-content').each(function (index, element) {
+                let str=$(element).text().toString()
+                let a = str.indexOf('答案解析：暂无')
+                let b = str.indexOf('参考答案：')
+                let answ = $(element).find('.e__textarea')
+                answ.val(str.slice((b+5),a))
+                console.log(answ)
+            });
+            $('.sub-content').each(function (index, element) {
+                // element == this
+
+                let option = $(element).find('.sub-answer dd')
+                let str=$(element).text().toString()
+                option.each(function (ind, ele) {
+                    // element == this
+                    let an = $(ele).attr('data-value')
+                    if (str.indexOf('答案解析：暂无')-str.indexOf('参考答案：')==7){
+                        if(an==str[str.indexOf('参考答案：')+5]){
+                            $(ele).click()
+                            return false
+                        }
+
+                    }
+                    else{
+                        for(let i=0;i<(str.indexOf('答案解析：暂无')-str.indexOf('参考答案：')-6);i++){
+                            if(an==str[str.indexOf('参考答案：')+5+i]){
+                                $(ele).click()
+
+                            }
+                        }
+                    }
+                });
+
+
+                str.indexOf('参考答案：')
+                str.indexOf('答案解析：暂无')
+                //option.click()
+
+                //console.log(str.indexOf('答案解析：暂无')-str.indexOf('参考答案：'))
+                //console.log(str.charAt(option.text()))
+                i++
+
+            });
+
+        }, 5000);
+
+    })
+    msg('答案完毕',6000)
+    // Your code here...
+})();
